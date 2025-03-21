@@ -1,126 +1,70 @@
 
-
+import java.io.*;
+import java.util.*;
 
 public class Main {
 
-    public static void swap(int[] arr, int i, int j) {
-        int temp = arr[i];
-        arr[i] = arr[j];
-        arr[j] = temp;
-    }
+    // read CSV file and return data in 3rd column
+    public static int[] readCSV(String filePath, int limit) throws IOException {
+        List<Integer> data = new ArrayList<>(); // Verileri tutacak liste
+        BufferedReader reader = new BufferedReader(new FileReader(filePath));
 
-    public static void combSort(int[] arr) {
+        String line;
+        int lineCount = 0;
 
-        int gap = arr.length;
-        float shrink = 1.3f;
-        boolean sorted = false;
-        while (!sorted) {
-            gap = (int) (gap / shrink);
-            sorted = (gap == 1);
+        while ((line = reader.readLine()) != null && data.size() < limit) {
+            lineCount++;
+            if (lineCount == 1)
+                continue; // Başlık satırını atla (Eğer başlık varsa)
 
-            for (int i = 0; i < arr.length - gap; i++) {
-                if (arr[i] > arr[i + gap]) {
-                    swap(arr, i, i + gap);
+            String[] columns = line.split(","); // Satırı virgüllerle ayır
+            if (columns.length >= 3) { // En az 3 sütun olduğundan emin ol
+                try {
+                    int value = Integer.parseInt(columns[2].trim()); // 3. sütundaki değeri al
+                    data.add(value); // Listeye ekle
+                } catch (NumberFormatException e) {
+                    System.out.println("Hatalı veri: " + columns[2]);
                 }
             }
         }
+
+        reader.close();
+
+        // Listeyi diziye dönüştür
+        return data.stream().mapToInt(Integer::intValue).toArray();
     }
 
-    public static void insertionSort(int[] arr) {
+    public static int[] reverseArray(int[] origin) {
 
-        for (int j = 1; j < arr.length; j++) {
-            int key = arr[j];
-            int i = j - 1;
-            while (i >= 0 && arr[i] > key) {
-                arr[i + 1] = arr[i];
-                i--;
-            }
-            arr[i + 1] = key;
+        int[] arr = origin.clone();
+        int left = 0;
+        int right = arr.length - 1;
+    
+        // Swap elements from both ends towards the center
+        while (left < right) {
+            // Swap the elements at left and right indices
+            int temp = arr[left];
+            arr[left] = arr[right];
+            arr[right] = temp;
+    
+            // Move towards the center
+            left++;
+            right--;
         }
 
-    }
-
-    public static void shakerSort(int[] arr) {
-
-        boolean swapped = true;
-        while (swapped) {
-            swapped = false;
-            for (int i = 0; i < arr.length - 2; i++) {
-                if (arr[i] > arr[i + 1]) {
-                    swap(arr, i, i + 1);
-                    swapped = true;
-                }
-            }
-
-            if (!swapped) {
-                break;
-            }
-
-            swapped = false;
-
-            for (int i = arr.length - 2; i > 0; i--) {
-                if (arr[i] > arr[i + 1]) {
-                    swap(arr, i, i + 1);
-                    swapped = true;
-                }
-            }
-        }
-    }
-
-    public static void shellSort(int[] arr) {
-
-        int n = arr.length;
-        int gap = n / 2;
-
-        while (gap > 0) {
-            for (int i = gap; i < n; i++) {
-                int temp = arr[i];
-                int j = i;
-
-                while (j >= gap && arr[j - gap] > temp) {
-                    arr[j] = arr[j - gap];
-                    j = j - gap;
-                }
-                arr[j] = temp;
-            }
-            gap = gap / 2;
-        }
-    }
-
-    public static int[] radixSort(int[] arr, int d) {
-        for (int pos = 1; pos <= d; pos++) {
-            arr = countSort(arr, pos);
-        }
         return arr;
     }
 
-    public static int[] countSort(int[] arr, int pos) {
+    public static boolean isReverseSorted(int[] arr) {
 
-        int[] count = new int[10];
-        int[] output = new int[arr.length];
-        int size = arr.length;
+        for (int i = 0; i < arr.length - 1; i++) {
+            if (arr[i] < arr[i + 1]) {
+                return false;
+            }
 
-        for (int i = 0; i < size; i++) {
-            int digit = getDigit(arr[i],pos);
-            count[digit]++;
         }
-
-        for (int i = 1; i < 10; i++) {
-            count[i] += count[i-1];
-        }
-
-        for (int i = size - 1; i >= 0; i--) {
-            int digit = getDigit(arr[i], pos);
-            count[digit]--;
-            output[count[digit]] = arr[i];
-        }
-
-        return output;
+        return true;
     }
-    public static int getDigit(int number, int pos) {
-        return (number / (int) Math.pow(10, pos-1)) % 10;
-    }
-
 
     public static boolean isSorted(int[] arr) {
 
@@ -134,15 +78,45 @@ public class Main {
     }
 
     public static void main(String[] args) {
+
         System.out.println("Hello world!");
-        int[] array = {112, 31, 23, 12, 45, 11, 2, 5, 77, 1};
 
-        array = radixSort(array,3);
+        try {
 
-        for (int idx = 0; idx < array.length; idx++) {
-            System.out.print(array[idx] + ", ");
+            // Read data from the file and store it in the fullData array
+            String filePath = "TrafficFlowDataset.csv";
+            int[] fullData = readCSV(filePath, 250000);
+
+            //Random data test
+            Testing.FullTest("Random data", fullData);
+
+            //Sort the fullData and check
+            int[] sortedFullData = SortingAlgorithms.radixSort(fullData);
+
+            if (!isSorted(sortedFullData))
+                System.out.println("ERROR: sortedFullData is not sorted!!");
+            else {
+                System.out.println("OK: sortedFullData is sorted succsesfully!");
+            }
+
+            //Sorted data test
+            Testing.FullTest("Sorted data", sortedFullData);
+
+            //Reverse sort fullData and check
+            int[] reversedFullData = reverseArray(sortedFullData);
+            
+            if (!isReverseSorted(reversedFullData)) {
+                System.out.println("ERROR: reversedFullData is not reverse sorted!!");
+            } else {
+                System.out.println("OK: reversedFullData is reverse sorted successfully!");
+            }
+        
+            //Reverse sorted data test
+            Testing.FullTest("Reverse sorted data", reversedFullData);
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        System.out.println("\n" + isSorted(array));
-
     }
 }

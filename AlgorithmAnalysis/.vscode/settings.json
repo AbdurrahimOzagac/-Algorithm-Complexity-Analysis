@@ -3,6 +3,7 @@
     "java.project.outputPath": "bin",
     "java.project.referencedLibraries": [
         "lib/**/*.jar",
-        "c:\\abdev\\algorithms\\xchart-3.8.8.jar"
+        "c:\\abdev\\algorithms\\xchart-3.8.8.jar",
+        "c:\\Users\\Abd\\Desktop\\xchart-3.8.8.jar"
     ]
 }
